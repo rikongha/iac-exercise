@@ -1,0 +1,50 @@
+---
+- name: "Update apt packages"
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: "upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: "install build essentials"
+  become: yes
+  apt:
+    name: build-essential
+    update_cache: yes
+
+- name: "install dependencies"
+  become: yes
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
+
+- name: "remove unnecessary dependencies"
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: "install pm2"
+  become: yes
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
+- name: "create directory"
+  file: 
+    path: ~/web
+    state: directory
+
+- name: "deploy website files"
+  template: 
+    src: "files/index.js"
+    dest: "~/web/index.js"
+
+- name: "Run server"
+  shell: |
+    pm2 start ~/web/index.js -f

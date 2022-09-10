@@ -1,0 +1,1 @@
+aws cloudformation create-stack --stack-name cicd --region us-east-1 --template-body file://template-ec2.yml

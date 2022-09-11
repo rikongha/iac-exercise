@@ -12,6 +12,13 @@ commands:
     steps:
       - run: echo << parameters.id >>
 
+  print_workflow_id:
+    parameters:
+      id:
+        type: string
+    steps:
+      - run: echo << parameters.id >>
+
   # Rollback
   destroy_environment:
     steps:
@@ -31,6 +38,8 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - print_workflow_id:
+          id: ${CIRCLE_WORKFLOW_ID:0:5}
       - run:
           name: Create Cloudformation Stack
           command: |
@@ -41,6 +50,27 @@ jobs:
       # Uncomment the line below to simulate failure
       # - run: return 1
 
+  # Config and Deploy
+  configure_infrastructure: 
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["1a:9f:42:45:b1:33:75:3d:c3:c6:72:66:7b:49:e7:ba"]
+      - run:
+          name: Install Ansible
+          command: |
+            # install the dependencies needed for your playbook
+            apk add --update ansible 
+      - run:
+          name: Get instance IP
+          command: |
+            ./get-ip-addr.sh
+      - run:
+          name: Run Playbook and Configure server
+          command: |
+            ansible-playbook -i inventory main-remote.yml
 workflows:
   auto-workflow:
     jobs:

@@ -51,7 +51,7 @@ jobs:
       # - run: return 1
 
   # Config and Deploy
-  configure_infrastructure: 
+  configure_infrastructure:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -62,7 +62,7 @@ jobs:
           name: Install Ansible
           command: |
             # install the dependencies needed for your playbook
-            apk add --update ansible 
+            apk add --update ansible
       - run:
           name: Get instance IP
           command: |
@@ -71,7 +71,28 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i inventory main-remote.yml
+
+  # Exercise: Smoke Testing
+  smoke_test:
+    docker:
+      - image: alpine:latest
+    steps:
+      - run: apk add --update curl
+      - run:
+          name: smoke test
+          command: |
+            URL="https://blog.udacity.com/"
+            # Test if website exists
+            if curl -s --head ${URL} 
+            then
+              return 0
+            else
+              return 1
+            fi
+
 workflows:
   auto-workflow:
     jobs:
-      - create_infrastructure
+      # - create_infrastructure
+      # - configure_infrastructure
+      - smoke_test
